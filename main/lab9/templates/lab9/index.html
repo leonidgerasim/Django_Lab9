@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <style>
+        table {
+            margin-top: 10px;
+            margin-right: 5px;
+            width: 50%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #FFFFFF;
+            background-color: #FFFFFF;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body style="background-color: #FFFFFF">
+<hr />
+  <div class="row">
+    <div class="col-md-6">
+      <canvas id="myChartline"></canvas>
+    </div>
+    <div class="col-md-6">
+      <canvas id="myChartBar"></canvas>
+    </div>
+  </div>
+<div id="parameter_table">
+
+</div>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Параметр</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for id, value in parameters.items %}
+    <tr>
+        <td>{{ id }}</td>
+        <td>{{ value }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit">Добавить значение</button>
+    </form>
+</div>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+ <script>
+<!--     var ajax_call = function(){-->
+        $.ajax({
+            method: "GET",
+            url: "{% url 'main:func' %}",
+            success: function(data) {
+                drawLineGraph(data, 'myChartline');
+                drawBarGraph(data, 'myChartBar');
+                console.log("drawing");
+                percent(data);
+                error(data);
+            },
+            error: function(error_data) {
+                console.log(error_data);
+            }
+            })
+<!--     }-->
+
+<!--    setTimeout(function(){-->
+<!--        location = ''-->
+<!--        }, 5000)-->
+
+    function percent(data) {
+        if(data.percent){
+            alert("Значение изменилось на более чем 40%")}
+    }
+
+    function error(data) {
+        if(data.error){
+            alert("ТРЕВОГА: ЗНАЧЕНИЕ ВЫШЛА ЗА ОБЛАСТЬ ОПРЕДЕЛЕНИЯ")
+        }
+    }
+
+    function drawLineGraph(data, id) {
+      var labels = data.labels;
+      var chartLabel = data.chartlabel;
+      var chartdata = data.chartdata;
+      var ctx = document.getElementById(id).getContext('2d');
+      var average = data.average;
+      var chart1 = new Chart(ctx, {
+        // The type of chart we want to create
+        type: 'line',
+
+        // The data for our dataset
+        data: {
+          labels: labels,
+          datasets: [{
+            label: chartLabel,
+            borderColor: 'rgb(55, 99, 132)',
+            data: chartdata,
+          },
+          {label: "Среднее",
+            borderColor: 'rgb(238, 34, 34)',
+            data: average,}]
+        },
+
+        // Configuration options go here
+        options: {
+          scales: {
+            xAxes: [{
+              display: true
+            }],
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+    }
+     function drawBarGraph(data, id) {
+      var labels = data.labels;
+      var chartLabel = data.chartlabel;
+      var chartdata = data.chartdata;
+      var ctx = document.getElementById(id).getContext('2d');
+      var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: chartLabel,
+            data: chartdata,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(54, 162, 235, 0.2)',
+              'rgba(255, 206, 86, 0.2)',
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(153, 102, 255, 0.2)',
+              'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+              'rgba(255, 99, 132, 1)',
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 206, 86, 1)',
+              'rgba(75, 192, 192, 1)',
+              'rgba(153, 102, 255, 1)',
+              'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+    }
+ </script>
+</body>
+</html>
